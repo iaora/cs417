@@ -2,10 +2,11 @@ import sys
 import socket
 import argparse
 import json
+from datetime import datetime
 
 def process_args():
     parser = argparse.ArgumentParser(description='Connect to a server using TCP or UDP' +
-                                     'using a streaming or stop-and-wait protocol')
+                                     'using a pure-streaming or stop-and-wait protocol')
     parser.add_argument('host', type=str, default=socket.gethostname(),
                         help='name of the host to connect to')
     parser.add_argument('port_num', type=int, default=12397,
@@ -13,13 +14,13 @@ def process_args():
     parser.add_argument('protocol', type=str, default="tcp",
                         help='connect to server via tcp or udp')
     parser.add_argument('awk_type', type=str, default="streaming",
-                        help='choose streaming or stop-and-wait protocol')
+                        help='choose pure-streaming or stop-and-wait protocol')
     parser.add_argument('msg_size', type=int, default=1024,
                         help='number of bytes to send to receive')
 
     args = parser.parse_args()
     args.protocol = verify_input(args.protocol, "tcp", "udp")
-    args.awk_type = verify_input(args.awk_type, "streaming", "stop-and-wait")
+    args.awk_type = verify_input(args.awk_type, "pure-streaming", "stop-and-wait")
 
     return args
 
@@ -43,24 +44,37 @@ def connect_sock(args):
         client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     client_sock.connect((args.host, args.port_num))
 
-    msg = {'protocol': args.protocol, 'total_size': args.msg_size}
+    msg = {'awk_protocol': args.awk_type, 'total_size': 2**30, 'msg_size': args.msg_size}
     client_sock.send(json.dumps(msg))
 
     return client_sock
 
 
-def pure_streaming():
-    return
-
-
-def stop_and_wait():
-    return
+def send_bytes(args, client_sock):
+    print "Preparing to send bytes of size " + str(args.msg_size) + " ..."
+    count = 2**30
+    buff = bytearray(args.msg_size)
+    while (count > 0):
+        print "Sending bytes of size " + str(args.msg_size) + " ..."
+        bytes_sent = client_sock.send(buff)
+        if bytes_sent != args.msg_size:
+            return
+        count -= bytes_sent
+        print count
+        #if args.awk_type == "stop-and-wait":
+        #    ack, bytes_read = read()
 
 
 def main():
     args = process_args()
 
     client_sock = connect_sock(args)
+    start = datetime.now()
+
+    send_bytes(args, client_sock)
+
+    end = datetime.now()
+    delta = (end - start)/2**20
 
     client_sock.close()
 

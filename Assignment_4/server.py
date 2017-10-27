@@ -5,17 +5,17 @@ import json
 
 def process_args():
     parser = argparse.ArgumentParser(description='Connect to a client using TCP or UDP' +
-                                     'using a streaming or stop-and-wait protocol')
+                                     'using a pure streaming or stop-and-wait protocol')
     parser.add_argument('port_num', type=int, default=12397,
                         help='port number to connect to')
     parser.add_argument('protocol', type=str, default="tcp",
                         help='connect to server via tcp or udp')
     parser.add_argument('awk_type', type=str, default="streaming",
-                        help='choose streaming or stop-and-wait protocol')
+                        help='choose pure-streaming or stop-and-wait protocol')
 
     args = parser.parse_args()
     args.protocol = verify_input(args.protocol, "tcp", "udp")
-    args.awk_type = verify_input(args.awk_type, "streaming", "stop-and-wait")
+    args.awk_type = verify_input(args.awk_type, "pure-streaming", "stop-and-wait")
 
     return args
 
@@ -42,12 +42,24 @@ def connect_sock(args):
     return client_sock
 
 
-def pure_streaming():
-    return
+def receive_bytes(args, conn, ini_data):
+    print "Receiving bytes ..."
+    count = 0
+    bytes_read = conn.recv(args.msg_size)
+    print sys.getsizeof(bytes_read)
 
-
-def stop_and_wait():
-    return
+    while (bytes_read != 0):
+        print sys.getsizeof(bytes_read)
+        bytes_read = conn.recv(args.msg_size)
+    #    try:
+    #        count += bytes_read
+    #        if ini_data['awk_protocol'] == "stop-and-wait":
+    #            send(ackbuf, 1)
+    #        if count >= ini_data['total_size']:
+    #            break
+    #    except socket.error:
+    #        print "Error"
+    #        break
 
 
 def main():
@@ -58,18 +70,18 @@ def main():
 
     client_sock.listen(1)
 
-    print "Waiting for connection..."
-    conn, addr = client_sock.accept()
-    print "Connected by" + str(addr)
-    try:
-        data = conn.recv(2014)
-        print "Client says: " + str(data)
-        
-    except socket.error:
-        print "Error"
-    finally:
-        conn.close()
+    while True:
+        print "Waiting for connection..."
+        conn, addr = client_sock.accept()
+        print "Connected by" + str(addr)
+        try:
+            ini_data = json.loads(conn.recv(1))
+            #receive_bytes(args, conn, ini_data)
+        finally:
+            print "lol"
+        #    conn.close()
 
+    client_sock.close()
 
 if __name__ == "__main__":
     main()
