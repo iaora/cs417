@@ -65,8 +65,9 @@ def send_bytes(args, client_sock):
             return
         count -= bytes_sent
         print count
-        #if args.awk_type == "stop-and-wait":
-        #    ack, bytes_read = read()
+        if args.awk_type == "stop-and-wait":
+            print "stopandwait"
+            ack = client_sock.recv(1)
 
 
 def main():

@@ -53,10 +53,10 @@ def receive_bytes_tcp(args, ini_data, conn):
 
     # Continue looping while still data being read
     while (len(bytes_read) != 0):
+        if ini_data['awk_protocol'] == "stop-and-wait":
+            conn.send(bytearray(1))
         count += len(bytes_read)
         bytes_read = conn.recv(ini_data['msg_size'])
-        #if ini_data['awk_protocol'] == "stop-and-wait":
-        #    conn.send(ackbuf, 1)
         if count >= ini_data['total_size']:
             break
     return count
@@ -108,17 +108,17 @@ def receive_bytes_udp(args, ini_data, server_sock):
     print "Receiving bytes ..."
 
     count = 0
-    bytes_read = server_sock.recvfrom(ini_data['msg_size'])
-    server_sock.settimeout(1)
-    while (bytes_read[0]):
-        count += len(bytes_read[0])
+    bytes_read, addr = server_sock.recvfrom(ini_data['msg_size'])
+    server_sock.settimeout(5)
+    while (bytes_read):
+        count += len(bytes_read)
+        if ini_data['awk_protocol'] == "stop-and-wait":
+            server_sock.sendto(bytearray(1), addr)
         try:
-            bytes_read = server_sock.recvfrom(ini_data['msg_size'])
+            bytes_read, addr = server_sock.recvfrom(ini_data['msg_size'])
         except socket.timeout:
             print "Socket timed out.. closing socket"
             break
-        #if ini_data['awk_protocol'] == "stop-and-wait":
-        #    conn.send(ackbuf, 1)
         if count >= ini_data['total_size']:
             break
     return count
