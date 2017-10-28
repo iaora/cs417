@@ -45,14 +45,17 @@ def connect_sock(args):
     client_sock.connect((args.host, args.port_num))
 
     msg = {'awk_protocol': args.awk_type, 'total_size': 2**30, 'msg_size': args.msg_size}
+    print "Sending info to server"
     client_sock.send(json.dumps(msg))
+    client_sock.recv(1)
+    print "Received response from server"
 
     return client_sock
 
 
 def send_bytes(args, client_sock):
     print "Preparing to send bytes of size " + str(args.msg_size) + " ..."
-    count = 2**30
+    count = 1000
     buff = bytearray(args.msg_size)
     while (count > 0):
         print "Sending bytes of size " + str(args.msg_size) + " ..."

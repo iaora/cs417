@@ -45,12 +45,11 @@ def connect_sock(args):
 def receive_bytes(args, conn, ini_data):
     print "Receiving bytes ..."
     count = 0
-    bytes_read = conn.recv(args.msg_size)
+    bytes_read = conn.recv(ini_data['msg_size'])
     print sys.getsizeof(bytes_read)
-
-    while (bytes_read != 0):
+    while (bytes_read):
+        bytes_read = conn.recv(ini_data['msg_size'])
         print sys.getsizeof(bytes_read)
-        bytes_read = conn.recv(args.msg_size)
     #    try:
     #        count += bytes_read
     #        if ini_data['awk_protocol'] == "stop-and-wait":
@@ -75,8 +74,9 @@ def main():
         conn, addr = client_sock.accept()
         print "Connected by" + str(addr)
         try:
-            ini_data = json.loads(conn.recv(1))
-            #receive_bytes(args, conn, ini_data)
+            ini_data = json.loads(conn.recv(100))
+            conn.send(bytearray(1))
+            receive_bytes(args, conn, ini_data)
         finally:
             print "lol"
         #    conn.close()
