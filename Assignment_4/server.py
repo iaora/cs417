@@ -33,55 +33,89 @@ def verify_input(given, option1, option2):
 
 # method to connect to socket and send initial message to server
 def connect_sock(args):
+    print "Listening on port " + str(args.port_num)
     if args.protocol == "tcp":
-        client_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        print "tcp"
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     else:
-        client_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_sock.bind(('', args.port_num))
+        print "udp"
+        server_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_sock.bind(('', args.port_num))
 
-    return client_sock
+    return server_sock
 
-
-def receive_bytes(args, conn, ini_data):
+# method to handle all TCP transfers
+def receive_bytes_tcp(args, ini_data, conn):
     print "Receiving bytes ..."
+
     count = 0
     bytes_read = conn.recv(ini_data['msg_size'])
-    print sys.getsizeof(bytes_read)
-    while (bytes_read):
+    print len(bytes_read)
+    while (len(bytes_read) != 0):
+        count += len(bytes_read)
         bytes_read = conn.recv(ini_data['msg_size'])
-        print sys.getsizeof(bytes_read)
-    #    try:
-    #        count += bytes_read
-    #        if ini_data['awk_protocol'] == "stop-and-wait":
-    #            send(ackbuf, 1)
-    #        if count >= ini_data['total_size']:
-    #            break
-    #    except socket.error:
-    #        print "Error"
-    #        break
+        if ini_data['awk_protocol'] == "stop-and-wait":
+            send(ackbuf, 1)
+        if count >= ini_data['total_size']:
+            break
+    print "Count: " + str(count)
 
 
-def main():
-    args = process_args()
+# method to handle all UDP transfers
+def receive_bytes_udp(args, ini_data, server_sock):
+    print "Receiving bytes ..."
 
-    client_sock = connect_sock(args)
-    print "Listening on port " + str(args.port_num)
+    count = 0
+    bytes_read = server_sock.recvfrom(ini_data['msg_size'])
+    server_sock.settimeout(1)
+    print len(bytes_read[0])
+    while (bytes_read[0]):
+        count += len(bytes_read[0])
+        try:
+            bytes_read = server_sock.recvfrom(ini_data['msg_size'])
+        except socket.timeout:
+            break
+        print len(bytes_read[0])
+        if ini_data['awk_protocol'] == "stop-and-wait":
+            send(ackbuf, 1)
+        if count >= ini_data['total_size']:
+            break
+    print "Count: " + str(count)
 
-    client_sock.listen(1)
 
+# Method to handle all TCP connections
+def tcp(server_sock, args):
+    server_sock.listen(1)
     while True:
         print "Waiting for connection..."
-        conn, addr = client_sock.accept()
+        conn, addr = server_sock.accept()
         print "Connected by" + str(addr)
         try:
             ini_data = json.loads(conn.recv(100))
             conn.send(bytearray(1))
-            receive_bytes(args, conn, ini_data)
+            receive_bytes_tcp(args, ini_data, conn=conn)
+            conn.close()
         finally:
             print "lol"
-        #    conn.close()
 
-    client_sock.close()
+def udp(server_sock, args):
+    # Get initial data
+    ini_data = server_sock.recvfrom(1024)
+    ini_data = json.loads(ini_data[0])
+
+    receive_bytes_udp(args, ini_data, server_sock=server_sock)
+
+def main():
+    args = process_args()
+
+    server_sock = connect_sock(args)
+
+    if args.protocol == "tcp":
+        tcp(server_sock, args)
+    else:
+        udp(server_sock, args)
+
+    server_sock.close()
 
 if __name__ == "__main__":
     main()
