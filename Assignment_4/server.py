@@ -49,6 +49,7 @@ def receive_bytes_tcp(args, ini_data, conn):
     print "Receiving bytes.."
 
     count = 0
+    msg_count = 0
     bytes_read = conn.recv(ini_data['msg_size'])
 
     # Continue looping while still data being read
@@ -59,7 +60,8 @@ def receive_bytes_tcp(args, ini_data, conn):
         bytes_read = conn.recv(ini_data['msg_size'])
         if count >= ini_data['total_size']:
             break
-    return count
+        msg_count += 1
+    return count, msg_count
 
 
 # Method to handle all TCP connections
@@ -81,10 +83,12 @@ def tcp(server_sock, args):
         try:
             ini_data = json.loads(conn.recv(100))
             conn.send(bytearray(1))
-            bytes_received = receive_bytes_tcp(args,
+            bytes_received, msg_count = receive_bytes_tcp(args,
                                                 ini_data,
                                                 conn=conn)
-            print bytes_received
+            print "Number of bytes received: " + str(bytes_received)
+            print "Number of messages received: " + str(msg_count)
+            print "Ack protocol used: " + ini_data['awk_protocol']
         finally:
             print "Closing connection.."
             conn.close()
@@ -97,10 +101,12 @@ def udp(server_sock, args):
     ini_data = json.loads(ini_data[0])
 
     # Handle receiving bytes from client in UDP
-    bytes_received = receive_bytes_udp(args,
+    bytes_received, msg_count = receive_bytes_udp(args,
                                         ini_data,
                                         server_sock=server_sock)
-    print bytes_received
+    print "Number of bytes received: " + str(bytes_received)
+    print "Number of messages received: " + str(msg_count)
+    print "Ack protocol used: " + ini_data['awk_protocol']
 
 
 # method to handle all UDP transfers
@@ -110,6 +116,7 @@ def receive_bytes_udp(args, ini_data, server_sock):
     count = 0
     bytes_read, addr = server_sock.recvfrom(ini_data['msg_size'])
     server_sock.settimeout(5)
+    msg_count = 0
     while (bytes_read):
         count += len(bytes_read)
         if ini_data['awk_protocol'] == "stop-and-wait":
@@ -121,7 +128,8 @@ def receive_bytes_udp(args, ini_data, server_sock):
             break
         if count >= ini_data['total_size']:
             break
-    return count
+        msg_count += 1
+    return count, msg_count
 
 
 def main():

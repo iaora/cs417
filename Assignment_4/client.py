@@ -56,30 +56,36 @@ def connect_sock(args):
 
 def send_bytes(args, client_sock):
     print "Preparing to send bytes of size " + str(args.msg_size) + " ..."
-    count = 2000
+    byte_count = 0
+    msg_count = 0
     buff = bytearray(args.msg_size)
-    while (count > 0):
+    while (byte_count < 2000):
         print "Sending bytes of size " + str(args.msg_size) + " ..."
         bytes_sent = client_sock.send(buff)
         if bytes_sent != args.msg_size:
             return
-        count -= bytes_sent
-        print count
+        byte_count += bytes_sent
         if args.awk_type == "stop-and-wait":
-            print "stopandwait"
             ack = client_sock.recv(1)
+            msg_count += 1
+        msg_count += 1
+    return byte_count, msg_count
 
 
 def main():
     args = process_args()
 
     client_sock = connect_sock(args)
+
     start = datetime.now()
 
-    send_bytes(args, client_sock)
+    byte_count, msg_count = send_bytes(args, client_sock)
 
     end = datetime.now()
-    delta = (end - start)/2**20
+    delta = ((end - start).total_seconds()*1000)/2**20
+    print "Total number of messages sent: " + str(msg_count)
+    print "Total number of bytes sent:  " + str(byte_count)
+    print "Total time: " + str(delta)
 
     client_sock.close()
 
