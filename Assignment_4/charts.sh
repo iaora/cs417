@@ -4,5 +4,7 @@
 
 for i in 1 2 4 8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65536
 do
-    python client.py ls.cs.rutgers.edu 50790 tcp stop-and-wait $i >> "output.txt"
+    echo "python client.py ls.cs.rutgers.edu 50790 udp stop-and-wait $i"
+    #python client.py ls.cs.rutgers.edu 50790 udp stop-and-wait $i
+    python client.py ls.cs.rutgers.edu 50790 udp pure-streaming $i >> "output.txt"
 done

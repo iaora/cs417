@@ -1,0 +1,48 @@
+Sending info to server
+Received response from server
+Preparing to send bytes of size 1 ...
+Total number of messages sent: 500000
+Total number of bytes sent:  500000
+Total time: 0.00155739498138
+Sending info to server
+Received response from server
+Preparing to send bytes of size 2 ...
+Total number of messages sent: 250000
+Total number of bytes sent:  500000
+Total time: 0.000638821601868
+Sending info to server
+Received response from server
+Preparing to send bytes of size 4 ...
+Total number of messages sent: 125000
+Total number of bytes sent:  500000
+Total time: 0.000416811943054
+Sending info to server
+Received response from server
+Preparing to send bytes of size 8 ...
+Total number of messages sent: 62500
+Total number of bytes sent:  500000
+Total time: 0.000225125312805
+Sending info to server
+Received response from server
+Preparing to send bytes of size 16 ...
+Total number of messages sent: 31250
+Total number of bytes sent:  500000
+Total time: 0.000131664276123
+Sending info to server
+Received response from server
+Preparing to send bytes of size 32 ...
+Total number of messages sent: 15625
+Total number of bytes sent:  500000
+Total time: 6.46276473999e-05
+Sending info to server
+Received response from server
+Preparing to send bytes of size 64 ...
+Total number of messages sent: 7813
+Total number of bytes sent:  500032
+Total time: 3.06806564331e-05
+Sending info to server
+Received response from server
+Preparing to send bytes of size 128 ...
+Total number of messages sent: 3907
+Total number of bytes sent:  500096
+Total time: 8.33797454834e-06

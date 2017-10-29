@@ -2,6 +2,7 @@ import sys
 import socket
 import argparse
 import json
+import threading
 
 def process_args():
     parser = argparse.ArgumentParser(description='Connect to a client using TCP or UDP' +
@@ -117,7 +118,7 @@ def receive_bytes_udp(args, ini_data, server_sock):
     bytes_read, addr = server_sock.recvfrom(ini_data['msg_size'])
     server_sock.settimeout(5)
     msg_count = 0
-    while (bytes_read):
+    while (len(bytes_read)):
         count += len(bytes_read)
         if ini_data['awk_protocol'] == "stop-and-wait":
             server_sock.sendto(bytearray(1), addr)
@@ -137,10 +138,11 @@ def main():
 
     server_sock = connect_sock(args)
 
-    if args.protocol == "tcp":
-        tcp(server_sock, args)
-    else:
-        udp(server_sock, args)
+    while True:
+        if args.protocol == "tcp":
+            tcp(server_sock, args)
+        else:
+            threading.Thread(target=udp, args=(server_sock, args))
 
     server_sock.close()
 

@@ -58,7 +58,7 @@ def send_bytes(args, client_sock):
     print "Preparing to send bytes of size " + str(args.msg_size) + " ..."
     byte_count = 0
     msg_count = 0
-    GM = 5000000
+    GM = 100000
     buff = bytearray(args.msg_size)
     while (byte_count < GM):
         #print "Sending bytes of size " + str(args.msg_size) + " ..."
@@ -84,8 +84,8 @@ def main():
 
     end = datetime.now()
     delta = ((end - start).total_seconds()*1000)/2**20
-    #print "Total number of messages sent: " + str(msg_count)
-    #print "Total number of bytes sent:  " + str(byte_count)
+    print "Total number of messages sent: " + str(msg_count)
+    print "Total number of bytes sent:  " + str(byte_count)
     print "Total time: " + str(delta)
 
     client_sock.close()
