@@ -2,7 +2,6 @@ import sys
 import socket
 import argparse
 import json
-import threading
 
 def process_args():
     parser = argparse.ArgumentParser(description='Connect to a client using TCP or UDP' +
@@ -138,11 +137,10 @@ def main():
 
     server_sock = connect_sock(args)
 
-    while True:
-        if args.protocol == "tcp":
-            tcp(server_sock, args)
-        else:
-            threading.Thread(target=udp, args=(server_sock, args))
+    if args.protocol == "tcp":
+        tcp(server_sock, args)
+    else:
+        udp(server_sock, args)
 
     server_sock.close()
 

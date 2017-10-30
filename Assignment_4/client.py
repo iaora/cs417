@@ -63,12 +63,12 @@ def send_bytes(args, client_sock):
     while (byte_count < GM):
         #print "Sending bytes of size " + str(args.msg_size) + " ..."
         bytes_sent = client_sock.send(buff)
-        if bytes_sent != args.msg_size:
-            return
-        byte_count += bytes_sent
         if args.awk_type == "stop-and-wait":
             ack = client_sock.recv(1)
             msg_count += 1
+        if bytes_sent != args.msg_size:
+            return
+        byte_count += bytes_sent
         msg_count += 1
     return byte_count, msg_count
 
